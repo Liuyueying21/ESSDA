@@ -1,0 +1,101 @@
+clc;clear;
+addpath CMU-PIE/
+%% CMU-PIE
+src_str={'PIE05','PIE05','PIE05','PIE05','PIE07','PIE07','PIE07','PIE07','PIE09','PIE09','PIE09','PIE09','PIE27','PIE27','PIE27','PIE27','PIE29','PIE29','PIE29','PIE29'};
+tgt_str={'PIE07','PIE09','PIE27','PIE29','PIE05','PIE09','PIE27','PIE29','PIE05','PIE07','PIE27','PIE29','PIE05','PIE07','PIE09','PIE29','PIE05','PIE07','PIE09','PIE27'};
+a = 10;
+src = src_str{x(a)};
+tgt = tgt_str{x(a)};
+fprintf(' %s vs %s \n', src, tgt);
+load(['data/CMU-PIE/' src '.mat']);
+Xs = fea'; clear fea;
+Xs_label = gnd;clear gnd;
+load(['data/CMU-PIE/' tgt '.mat']);
+Xt = fea'; clear fea;
+Xt_label = gnd;clear gnd;
+Xs = Xs./repmat(sqrt(sum(Xs.^2)),[size(Xs,1) 1]);
+Xt = Xt./repmat(sqrt(sum(Xt.^2)),[size(Xt,1) 1]);
+%% 弱标签生成
+nt = length(Xt_label);
+ratio=0.2;
+% ratio = 0.05:0.05:0.5;
+num_samples=round(nt*ratio);
+% load(['R/' src '_vs_' tgt '_' num2str(num_samples) '.mat']);
+% load(['par/ALTSL_P1/' src '_vs_' tgt '.mat']);
+% % load(['par/ALTSL_P1/COIL1_vs_COIL2_7.mat']);
+% alpha=alpha_max;
+% gamma=gamma_max;
+% omega=omega_max;
+% for r=1:length(ratio)
+%     uniqueLabels = unique(Xt_label);
+%     Class=length(uniqueLabels);
+%     % lt=round(ratio(r)*nt/Class);
+%     % load(['R/ratio0-50/' src '_vs_' tgt '_' num2str(lt) '.mat']);
+%     for num = 1 : 20
+%         Xt_tl=Xt(:,R(num,:));
+%         Xt_tlabel=Xt_label(R(num,:),:);
+%         Indx=1:length(Xt_label);
+%         Indx(R(num,:))=[];
+%         Xt_ul=Xt(:,Indx);
+%         Xt_ulabel=Xt_label(Indx,:);
+%         Xst=[Xs Xt_tl];
+%         Yst=[Xs_label;Xt_tlabel];
+%         Class=length(unique(Xt_label));
+%         %P
+%         [P,U,F,G,Z,M,ACC,Opt] = ALTSL_P1_new(Xs,Xs_label,Xt_tl,Xt_tlabel,Xt_ul,Xt_ulabel,alpha,gamma,omega);
+%         % 根据KNN
+%         X_train = P'*Xst;
+%         Y_test  = P'*Xt_ul;
+%         mdl = fitcknn(X_train',Yst);
+%         cls = predict(mdl,Y_test');
+%         acc = sum(cls==Xt_ulabel)/length(Xt_ulabel);
+%         Acc(num)=acc*100;
+%         [Macro_P,Macro_R,Macro_F,~,~,~]=macroF(Xt_ulabel,cls,Class);
+%         Precision(num)=Macro_P*100;
+%         Recall(num)=Macro_R*100;
+%         F1(num)=Macro_F*100;
+%         [auc,~]= AUC(Xt_ulabel,cls,Class);
+%         Auc(num)=auc*100;
+%     end
+    load(['result_new/ALTSL_FINAL/' src '_vs_' tgt '_' num2str(num_samples) '_random.mat']);
+    ave_acc_P1 = mean(Acc);std_acc_P1 =std(Acc);
+    ave_Precision_P1 = mean(Precision);std_Precision_P1 =std(Precision);
+    ave_Recall_P1 = mean(Recall);std_Recall_P1 =std(Recall);
+    ave_F1_P1 = mean(F1);std_F1_P1 =std(F1);
+    ave_AUC_P1 = mean(Auc);std_AUC_P1 =std(Auc);
+    % save(['result_new/ALTSL_FINAL/' src '_vs_' tgt '_' num2str(ratio(r)) '_random_guiyi.mat'],'Acc','Precision','Recall','F1','Auc','alpha','omega','gamma');
+    fprintf('ALTSL_P1: \n');
+    fprintf(' %.2f \n',ave_acc_P1);
+    fprintf(' %.2f \n ',ave_Precision_P1);
+    fprintf(' %.2f \n ',ave_Recall_P1);
+    fprintf(' %.2f \n',ave_F1_P1);
+    fprintf(' %.2f \n\n',ave_AUC_P1);
+    fprintf(' %.2f \n',std_acc_P1);
+    fprintf(' %.2f \n',std_Precision_P1);
+    fprintf(' %.2f \n',std_Recall_P1);
+    fprintf(' %.2f \n',std_F1_P1);
+    fprintf(' %.2f \n\n',std_AUC_P1);
+    % 作图
+    % figure1 = figure('Name',[src ' vs ' tgt]);
+    % axes1 = axes('Parent',figure1);
+    % %hold(axes1,'on');
+    % LineWidth = 2;
+    % MarkerSize = 2;
+    % yyaxis(axes1,'left');
+    % plot(ACC,'o-','Color',[0.121 0.553 0.678],'LineWidth',LineWidth,'MarkerSize',MarkerSize);
+    % ylabel('Accuracy','Fontname', 'Times New Roman','fontsize',25);
+    % % ylim([100 700]);
+    % hold on
+    % yyaxis(axes1,'right');
+    % plot(Opt,'s-','Color',[0.801 0.0745 0.0941],'LineWidth',LineWidth,'MarkerSize',MarkerSize);
+    % ylabel('Objective function value','Fontname', 'Times New Roman','fontsize',25);
+    % % ylim([30 45]);
+    % hold on
+    % xlabel('Iterative Number','Fontname', 'Times New Roman','fontsize',25);
+    % legend('Accuracy','Objective function value','Fontname','Times New Roman','fontsize',15,"Location","Best");
+    % set(gca,'GridAlpha',0.1,'LineWidth',1.5,'XGrid','on','YGrid','on');
+    % set(gca,'FontSize',15)  %是设置刻度字体大小
+    %
+    % saveas(gcf,['figure\convergence\ALTSL' src '_vs_' tgt '_random_convergence.fig'])
+    % save(['figure\convergence\ALTSL' src '_vs_' tgt '_random_convergence.mat'],'P','U','ACC','Opt');
+end
